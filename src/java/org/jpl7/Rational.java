@@ -3,7 +3,6 @@ package org.jpl7;
 import org.jpl7.fli.Prolog;
 import org.jpl7.fli.term_t;
 
-import java.math.BigInteger;
 import java.util.Map;
 
 /**
@@ -51,20 +50,40 @@ public class Rational extends Term {
 	/**
 	 * the Integer's immutable long value, iff small enough
 	 */
-	protected final long nominator;
+	protected final long numerator;
 	protected final long denominator;
 
 	/**
-	 * @param nominator
+	 * @param numerator
 	 *            This Integer's intended (long) value
 	 */
-	public Rational(long nominator, long denominator) {
+	public Rational(long numerator, long denominator) {
 		if (denominator == 0) {
 			throw new JPLException("cannot represent value as a long");
 		} else {
-			this.nominator = nominator;
-			this.denominator = denominator;
+			// reduce fraction
+			long g = gcd(numerator, denominator);
+
+			long num = numerator / g;
+			long dem = denominator / g;
+
+			// needed only for negative numbers
+			if (dem < 0) {
+				this.denominator = -dem;
+				this.numerator = -num;
+			} else {
+				this.denominator = dem;
+				this.numerator = num;
+			}
 		}
+	}
+
+	// return gcd(|m|, |n|)
+	private static long gcd(long m, long n) {
+		if (m < 0) m = -m;
+		if (n < 0) n = -n;
+		if (0 == n) return m;
+		else return gcd(n, m % n);
 	}
 
 	public Term[] args() {
@@ -83,10 +102,10 @@ public class Rational extends Term {
 			return true; // necessarily equal
 		} else if (obj instanceof Rational) {
 			Rational that = (Rational) obj;
-			if (this.nominator == that.nominator && this.denominator == that.denominator) {
+			if (this.numerator == that.numerator && this.denominator == that.denominator) {
 				return true;
 			} else
-				return (this.nominator / (double) this.denominator) == (that.nominator / (double)  that.denominator);
+				return false;
 		} else {
 			return false;
 		}
@@ -99,7 +118,7 @@ public class Rational extends Term {
 	 * @return whether this Rational's functor has (long) 'name' and 'arity'
 	 */
 	public final boolean hasFunctor(long val, int arity) {
-		return this.nominator == val &&  arity == 0;
+		return this.numerator == val &&  arity == 0;
 	}
 
 
@@ -111,7 +130,7 @@ public class Rational extends Term {
 	 * @return the int value of this Rational
 	 */
 	public final int intValue() {
-		return (int) Math.round(nominator / denominator);
+		return (int) Math.round(numerator / denominator);
 	}
 
 		/**
@@ -120,7 +139,7 @@ public class Rational extends Term {
 	 * @return the value of this org.jpl7.Rational as a long
 	 */
 	public final long longValue() {
-			return (long) nominator / denominator;
+			return (long) numerator / denominator;
 	}
 
 	/**
@@ -129,7 +148,7 @@ public class Rational extends Term {
 	 * @return the value of this Rational converted to a float
 	 */
 	public final float floatValue() {
-		return nominator / (float) denominator;
+		return numerator / (float) denominator;
 	}
 
 	/**
@@ -138,7 +157,7 @@ public class Rational extends Term {
 	 * @return the value of this org.jpl7.Rational as a long
 	 */
 	public final double doubleValue() {
-		return nominator / (double)  denominator;
+		return numerator / (double)  denominator;
 	}
 
 	/**
@@ -150,7 +169,7 @@ public class Rational extends Term {
 	 *            A (previously created) term_t which is to be set to a Prolog integer
 	 */
 	protected final void put(Map<String, term_t> varnames_to_vars, term_t term) {
-			Prolog.put_rational(term, nominator, denominator);
+			Prolog.put_rational(term, numerator, denominator);
 	}
 
 	/**
@@ -159,7 +178,7 @@ public class Rational extends Term {
 	 * @return a Prolog source text representation of this Rational's value
 	 */
 	public String toString() {
-		return String.format("%s{}%s", Long.toString(nominator), Long.toString(nominator));
+		return String.format("%s{}%s", Long.toString(numerator), Long.toString(numerator));
 	}
 
 	/**
