@@ -14,8 +14,9 @@ import org.junit.runner.Description;
 
 import static org.junit.Assert.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// In case we want to use advanced loggers in the future
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class GetSolution {
 //    final Logger logger = LoggerFactory.getLogger(GetSolution.class);
